@@ -1,0 +1,155 @@
+:root {
+  --red: #e63228;
+  --blue: #146eaa;
+  --yellow: #f0c801;
+  --orange: #f08c28;
+  --green: #7fb944;
+  --black: #000000;
+  --white: #f5edd9;
+  --gray:#969696;
+}
+
+body {
+    background-color: var(--black);
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+button {
+    width: 30px;
+    transition: all 0.4s;
+}
+
+button:hover {
+    width: 40px;
+}
+
+button:active {
+    width: 50px;
+}
+
+.texture {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("./src/assets/texture.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.app {
+    height: 100vh;
+    border: 5px solid var(--black);
+    display: flex;
+    flex-direction: row;
+    font-weight: bold;
+    background-color: var(--white)
+}
+
+.input {
+    border-right: 5px solid var(--black);
+    width: 15rem;
+}
+
+.add {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 5px solid var(--black);
+    background-color: var(--blue);
+    margin: 0;
+}
+
+.add-input {
+    border: none;
+    margin-left: 5px;
+    height: 30px;
+    flex-grow: 1;
+    border-right: 5px solid var(--black);
+    transition: height 0.4s;
+    background: none;
+}
+
+.add-input:focus {
+    height: 35px;
+    outline: none;
+    color: var(--white);
+}
+
+.add-button {
+    border: 5px solid var(--green);
+    color: #241c15;
+    background-color: var(--green);
+}
+
+.error {
+    display: flex;
+    align-items: center;
+    padding-left: 5px;
+    min-height: 30px;
+    font-weight: normal;
+    text-wrap: wrap;
+    background-color: var(--orange);
+    color: var(--white);
+    border-bottom: 5px solid var(--black);
+}
+
+.error:empty {
+    min-height: 0px;
+    border: none;
+}
+
+.entry {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 5px solid var(--black);
+}
+
+.entry-text {
+    border: none;
+    border-right: 5px solid var(--black);
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    flex-grow: 1;
+}
+
+.entry-button {
+    border: 5px solid var(--red);
+    background-color: var(--red);
+    color: #241c15;
+}
+
+.graph {
+    height: 100%;
+    width: 100%;
+    flex-grow: 1;
+    background-color: var(--white);
+}
+ #graph {
+    flex-grow: 1;
+}
+
+/* Estilos para los ejes */
+.x-axis {
+    stroke: var(--black);
+    stroke-width: 3;
+}
+
+.y-axis {
+    stroke: var(--black);
+    stroke-width: 3;
+}
+
+.axes {
+}
+
+.points {
+    /* Los puntos se renderizan encima de los ejes */
+}
