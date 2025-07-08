@@ -104,7 +104,8 @@ vectorToSvg svgHeight svgWidth (Vector vector) =
 mainSvg : Float -> Float -> List Point -> List Vector -> Svg a
 mainSvg svgHeight svgWidth points vectors =
     svg
-        [ width (String.fromFloat svgWidth)
+        [ class "graph"
+        , width (String.fromFloat svgWidth)
         , height (String.fromFloat svgHeight)
         , viewBox ("0 0 " ++ String.fromFloat svgWidth ++ " " ++ String.fromFloat svgHeight)
         ]

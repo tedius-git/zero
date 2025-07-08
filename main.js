@@ -6435,6 +6435,7 @@ var $author$project$Draw$mainSvg = F4(
 			$elm$svg$Svg$svg,
 			_List_fromArray(
 				[
+					$elm$svg$Svg$Attributes$class('graph'),
 					$elm$svg$Svg$Attributes$width(
 					$elm$core$String$fromFloat(svgWidth)),
 					$elm$svg$Svg$Attributes$height(
