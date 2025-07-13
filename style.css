@@ -14,6 +14,8 @@ body {
     margin: 0;
     padding: 0;
     position: relative;
+    height: 100vh;
+    overflow: hidden;
 }
 
 button {
@@ -50,12 +52,14 @@ button:active {
     display: flex;
     flex-direction: row;
     font-weight: bold;
-    background-color: var(--white)
+    background-color: var(--white);
+    box-sizing: border-box;
 }
 
 .input {
     border-right: 5px solid var(--black);
     width: 15rem;
+    flex-shrink: 0;
 }
 
 .add {
@@ -126,30 +130,37 @@ button:active {
     color: #241c15;
 }
 
-.graph {
+#svg {
     height: 100%;
     width: 100%;
     flex-grow: 1;
-    background-color: var(--white);
+    display: flex;
+    flex-direction: column;
 }
- #graph {
+
+#graph {
+    height: 100%;
+    width: 100%;
+    background-color: var(--white);
     flex-grow: 1;
 }
 
-/* Estilos para los ejes */
 .x-axis {
     stroke: var(--black);
-    stroke-width: 3;
 }
 
 .y-axis {
     stroke: var(--black);
+}
+
+.axis {
     stroke-width: 3;
 }
 
-.axes {
+.x-grid {
+    stroke: var(--gray);
+    stroke-width: 3;
 }
 
 .points {
-    /* Los puntos se renderizan encima de los ejes */
 }

@@ -1,6 +1,8 @@
 module Draw exposing (..)
 
+import List exposing (map, range, repeat)
 import Parse exposing (Point(..), Vector(..))
+import String exposing (fromFloat, fromInt)
 import Svg exposing (..)
 import Svg.Attributes exposing (class, cx, cy, fill, height, id, markerEnd, markerHeight, markerWidth, orient, r, refX, refY, stroke, strokeWidth, viewBox, width, x1, x2, y1, y2)
 
@@ -21,12 +23,18 @@ centerY svgHeight =
 
 axis : Float -> Float -> Svg a
 axis svgHeight svgWidth =
-    g [ class "axes" ]
+    g [ class "axis" ]
         [ -- Eje X (horizontal)
           line [ x1 "0", y1 (String.fromFloat (centerY svgHeight)), x2 (String.fromFloat svgWidth), y2 (String.fromFloat (centerY svgHeight)), class "x-axis" ] []
         , -- Eje Y (vertical)
           line [ x1 (String.fromFloat (centerX svgWidth)), y1 "0", x2 (String.fromFloat (centerX svgWidth)), y2 (String.fromFloat svgHeight), class "y-axis" ] []
         ]
+
+
+grid : Float -> Float -> Svg a
+grid svgHeight svgWidth =
+    g [ class "grid" ]
+        (List.indexedMap (\i -> \_ -> line [ x1 (fromInt (i * 10)), y1 (String.fromFloat (centerY svgHeight)), x2 (String.fromFloat svgWidth), y2 (String.fromFloat (centerY svgHeight)), class "x-grid" ] []) (repeat 20 0))
 
 
 arrowMarker : Svg a
@@ -104,7 +112,7 @@ vectorToSvg svgHeight svgWidth (Vector vector) =
 mainSvg : Float -> Float -> List Point -> List Vector -> Svg a
 mainSvg svgHeight svgWidth points vectors =
     svg
-        [ class "graph"
+        [ id "graph"
         , width (String.fromFloat svgWidth)
         , height (String.fromFloat svgHeight)
         , viewBox ("0 0 " ++ String.fromFloat svgWidth ++ " " ++ String.fromFloat svgHeight)

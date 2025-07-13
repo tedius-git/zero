@@ -2,15 +2,15 @@ module Main exposing (..)
 
 import Browser
 import Browser.Dom as Dom
+import Browser.Events
 import Draw exposing (mainSvg)
-import Html exposing (Html, button, div, input, text)
+import Html exposing (Html, button, div, input, p, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import List exposing (filter, member)
 import Parse exposing (Point(..), Vector(..), deadEndsToString, point, pointToString, vector, vectorToString)
 import Parser exposing (Parser, oneOf, run)
 import Task
-import Html exposing (p)
 
 
 
@@ -43,7 +43,7 @@ init _ =
       , parseError = ""
       , svgSize = Nothing
       }
-    , Task.perform (\_ -> GetSvgSize) (Task.succeed ())
+    , getSvgSizeCmd
     )
 
 
@@ -53,7 +53,7 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onResize (\_ _ -> GetSvgSize)
 
 
 
@@ -67,6 +67,11 @@ type Msg
     | UpdateInput String
     | GetSvgSize
     | GotSvgSize (Result Dom.Error Dom.Element)
+
+
+getSvgSizeCmd : Cmd Msg
+getSvgSizeCmd =
+    Task.attempt GotSvgSize (Dom.getElement "svg")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,9 +99,7 @@ update msg model =
             ( { model | vectors = filter (areDifferentVector vectorToDelete) model.vectors }, Cmd.none )
 
         GetSvgSize ->
-            ( model
-            , Task.attempt GotSvgSize (Dom.getElement "graph")
-            )
+            ( model, getSvgSizeCmd )
 
         GotSvgSize (Ok element) ->
             ( { model | svgSize = Just { width = element.element.width, height = element.element.height } }
@@ -104,7 +107,7 @@ update msg model =
             )
 
         GotSvgSize (Err _) ->
-            ( model, Cmd.none )
+            ( model, getSvgSizeCmd )
 
 
 parserMaster : Model -> Parser Model
@@ -180,11 +183,12 @@ view model =
             , div [] (List.reverse (List.map pointToDiv model.points))
             , div [] (List.reverse (List.map vectorToDiv model.vectors))
             ]
-        , div [id "graph"] [
-            case model.svgSize of
+        , div [ id "svg" ]
+            [ case model.svgSize of
                 Just size ->
-                    mainSvg size.height size.width model.points model.vectors 
+                    mainSvg size.height size.width model.points model.vectors
+
                 Nothing ->
-                    p [] [text "Error trying to get svg size"]
+                    p [] [ text "Loading..." ]
             ]
         ]
