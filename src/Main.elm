@@ -37,8 +37,8 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { points = [ Point { name = "A", x = 50, y = 100 } ]
-      , vectors = [ Vector { name = "u", x = -30, y = 50 } ]
+    ( { points = [ Point { name = "A", x = 5, y = 10 } ]
+      , vectors = [ Vector { name = "u", x = -3, y = 5 } ]
       , inputText = ""
       , parseError = ""
       , svgSize = Nothing

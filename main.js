@@ -5338,13 +5338,13 @@ var $author$project$Main$init = function (_v0) {
 			points: _List_fromArray(
 				[
 					$author$project$Parse$Point(
-					{name: 'A', x: 50, y: 100})
+					{name: 'A', x: 5, y: 10})
 				]),
 			svgSize: $elm$core$Maybe$Nothing,
 			vectors: _List_fromArray(
 				[
 					$author$project$Parse$Vector(
-					{name: 'u', x: -30, y: 50})
+					{name: 'u', x: -3, y: 5})
 				])
 		},
 		$author$project$Main$getSvgSizeCmd);
