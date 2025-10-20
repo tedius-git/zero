@@ -4,7 +4,7 @@ import Browser
 import Browser.Dom as Dom
 import Browser.Events
 import Draw exposing (mainSvg)
-import Html exposing (Html, button, div, input, p, text)
+import Html exposing (Html, a, button, div, img, input, p, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import List exposing (filter, member)
@@ -37,8 +37,8 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { points = [ Point { name = "A", x = 5, y = 10 } ]
-      , vectors = [ Vector { name = "u", x = -3, y = 5 } ]
+    ( { points = [ Point { name = "A", x = 50, y = 100 } ]
+      , vectors = [ Vector { name = "u", x = -30, y = 50 } ]
       , inputText = ""
       , parseError = ""
       , svgSize = Nothing
@@ -169,6 +169,11 @@ errorToDiv error =
     div [ class "error" ] [ text error ]
 
 
+socialsDiv : Html Msg
+socialsDiv =
+    a [ class "socials", target "_black", href "https://github.com/tedius-git/zero" ] [ img [ src "./src/assets/github-mark.svg", style "height" "30px" ] [] ]
+
+
 viewInput : String -> Html Msg
 viewInput inputText =
     Html.form [ class "add", onSubmit Add ] [ input [ class "add-input", value inputText, onInput UpdateInput ] [], button [ class "add-button", onClick Add ] [ text "+" ] ]
@@ -182,6 +187,8 @@ view model =
             , div [] [ errorToDiv model.parseError ]
             , div [] (List.reverse (List.map pointToDiv model.points))
             , div [] (List.reverse (List.map vectorToDiv model.vectors))
+            , div [ class "spacer" ] []
+            , socialsDiv
             ]
         , div [ id "svg" ]
             [ case model.svgSize of

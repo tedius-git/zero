@@ -5338,13 +5338,13 @@ var $author$project$Main$init = function (_v0) {
 			points: _List_fromArray(
 				[
 					$author$project$Parse$Point(
-					{name: 'A', x: 5, y: 10})
+					{name: 'A', x: 50, y: 100})
 				]),
 			svgSize: $elm$core$Maybe$Nothing,
 			vectors: _List_fromArray(
 				[
 					$author$project$Parse$Vector(
-					{name: 'u', x: -3, y: 5})
+					{name: 'u', x: -30, y: 50})
 				])
 		},
 		$author$project$Main$getSvgSizeCmd);
@@ -6938,6 +6938,42 @@ var $author$project$Main$pointToDiv = function (point) {
 					]))
 			]));
 };
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$html$Html$Attributes$target = $elm$html$Html$Attributes$stringProperty('target');
+var $author$project$Main$socialsDiv = A2(
+	$elm$html$Html$a,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('socials'),
+			$elm$html$Html$Attributes$target('_black'),
+			$elm$html$Html$Attributes$href('https://github.com/tedius-git/zero')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$img,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$src('./src/assets/github-mark.svg'),
+					A2($elm$html$Html$Attributes$style, 'height', '30px')
+				]),
+			_List_Nil)
+		]));
 var $author$project$Main$DeleteVector = function (a) {
 	return {$: 'DeleteVector', a: a};
 };
@@ -7106,7 +7142,15 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_Nil,
 						$elm$core$List$reverse(
-							A2($elm$core$List$map, $author$project$Main$vectorToDiv, model.vectors)))
+							A2($elm$core$List$map, $author$project$Main$vectorToDiv, model.vectors))),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('spacer')
+							]),
+						_List_Nil),
+						$author$project$Main$socialsDiv
 					])),
 				A2(
 				$elm$html$Html$div,
