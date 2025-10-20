@@ -24,13 +24,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Setup Elm
-        uses: jorelali/setup-elm@v5
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
         with:
-          elm-version: 0.19.1
+          nix_path: nixpkgs=channel:nixos-25.05
+          extra_nix_config: |
+            experimental-features = nix-command flakes
       
       - name: Build Elm to JavaScript
-        run: elm make src/Main.elm --output=main.js
+        run: |
+          nix develop --command bash -c '
+          elm make src/Main.elm --output=main.js
+          '
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
