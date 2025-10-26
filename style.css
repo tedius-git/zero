@@ -7,9 +7,11 @@
   --black: #000000;
   --white: #f5edd9;
   --gray:#969696;
+  --light-gray:#CCC8C8;
 }
 
 body {
+    font-family: "Google Sans Code", monospace;
     background-color: var(--black);
     margin: 0;
     padding: 0;
@@ -89,7 +91,7 @@ button:active {
     color: var(--white);
 }
 
-.add-button {
+.plus-button {
     border: 5px solid var(--green);
     color: #241c15;
     background-color: var(--green);
@@ -143,7 +145,7 @@ flex-grow: 1;
     flex-grow: 1;
 }
 
-.entry-button {
+.minus-button {
     border: 5px solid var(--red);
     background-color: var(--red);
     color: #241c15;
@@ -176,9 +178,14 @@ flex-grow: 1;
     stroke-width: 3;
 }
 
-.x-grid {
+.main-grid {
     stroke: var(--gray);
     stroke-width: 3;
+}
+
+.secund-grid {
+    stroke: var(--light-gray);
+    stroke-width: 2;
 }
 
 .points {

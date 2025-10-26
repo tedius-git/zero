@@ -1,40 +1,92 @@
 module Draw exposing (..)
 
-import List exposing (map, range, repeat)
+import List exposing (repeat)
 import Parse exposing (Point(..), Vector(..))
-import String exposing (fromFloat, fromInt)
 import Svg exposing (..)
 import Svg.Attributes exposing (class, cx, cy, fill, height, id, markerEnd, markerHeight, markerWidth, orient, r, refX, refY, stroke, strokeWidth, viewBox, width, x1, x2, y1, y2)
+
+
+type alias ZeroSvg =
+    { size : { width : Float, height : Float }
+    , center : { x : Float, y : Float }
+    , scale : Float
+    }
 
 
 
 -- Centro del SVG
 
 
-centerX : Float -> Float
-centerX svgWidth =
-    svgWidth / 2
+centerX : ZeroSvg -> Float
+centerX svg =
+    svg.size.width / 2 + svg.center.x
 
 
-centerY : Float -> Float
-centerY svgHeight =
-    svgHeight / 2
+centerY : ZeroSvg -> Float
+centerY svg =
+    svg.size.height / 2 + svg.center.y
 
 
-axis : Float -> Float -> Svg a
-axis svgHeight svgWidth =
+
+-- Convierte coordenadas del sistema matemático al sistema SVG
+-- En el sistema matemático: (0,0) está en el centro, Y crece hacia arriba
+-- En el sistema SVG: (0,0) está en la esquina superior izquierda, Y crece hacia abajo
+
+
+transformX : ZeroSvg -> Float -> Float
+transformX svg x =
+    centerX svg + x * svg.scale
+
+
+transformY : ZeroSvg -> Float -> Float
+transformY svg y =
+    centerY svg - (y * svg.scale)
+
+
+transformCoordinates : ZeroSvg -> Float -> Float -> ( Float, Float )
+transformCoordinates svg x y =
+    ( transformX svg x
+    , transformY svg y
+    )
+
+
+axis : ZeroSvg -> Svg a
+axis svg =
     g [ class "axis" ]
-        [ -- Eje X (horizontal)
-          line [ x1 "0", y1 (String.fromFloat (centerY svgHeight)), x2 (String.fromFloat svgWidth), y2 (String.fromFloat (centerY svgHeight)), class "x-axis" ] []
-        , -- Eje Y (vertical)
-          line [ x1 (String.fromFloat (centerX svgWidth)), y1 "0", x2 (String.fromFloat (centerX svgWidth)), y2 (String.fromFloat svgHeight), class "y-axis" ] []
+        [ -- Eje X
+          line [ x1 "0", y1 (String.fromFloat (centerY svg)), x2 (String.fromFloat svg.size.width), y2 (String.fromFloat (centerY svg)), class "x-axis" ] []
+        , -- Eje Y
+          line [ x1 (String.fromFloat (centerX svg)), y1 "0", x2 (String.fromFloat (centerX svg)), y2 (String.fromFloat svg.size.height), class "y-axis" ] []
         ]
 
 
-grid : Float -> Float -> Svg a
-grid svgHeight svgWidth =
-    g [ class "grid" ]
-        (List.indexedMap (\i -> \_ -> line [ x1 (fromInt (i * 10)), y1 (String.fromFloat (centerY svgHeight)), x2 (String.fromFloat svgWidth), y2 (String.fromFloat (centerY svgHeight)), class "x-grid" ] []) (repeat 20 0))
+grid : ZeroSvg -> Float -> List (Svg a)
+grid svg gridScale =
+    let
+        toSvgX : Float -> String
+        toSvgX x =
+            String.fromFloat (transformX svg x)
+
+        toSvgY : Float -> String
+        toSvgY y =
+            String.fromFloat (transformY svg y)
+    in
+    List.indexedMap (\i -> \_ -> line [ x1 (String.fromFloat 0), y1 (toSvgY (toFloat i * gridScale)), x2 (String.fromFloat svg.size.width), y2 (toSvgY (toFloat i * gridScale)) ] []) (repeat (round (svg.size.height / 2)) 0)
+        ++ List.indexedMap (\i -> \_ -> line [ x1 (String.fromFloat 0), y1 (toSvgY (toFloat i * -gridScale)), x2 (String.fromFloat svg.size.width), y2 (toSvgY (toFloat i * -gridScale)) ] []) (repeat (round (svg.size.height / 2)) 0)
+        ++ List.indexedMap (\i -> \_ -> line [ y1 (String.fromFloat 0), x1 (toSvgX (toFloat i * gridScale)), y2 (String.fromFloat svg.size.height), x2 (toSvgX (toFloat i * gridScale)) ] []) (repeat (round (svg.size.width / 2)) 0)
+        ++ List.indexedMap (\i -> \_ -> line [ y1 (String.fromFloat 0), x1 (toSvgX (toFloat i * -gridScale)), y2 (String.fromFloat svg.size.height), x2 (toSvgX (toFloat i * -gridScale)) ] []) (repeat (round (svg.size.width / 2)) 0)
+
+
+mainGrid : ZeroSvg -> Svg a
+mainGrid svg =
+    g [ class "main-grid" ]
+        (grid svg 5)
+
+
+secundGrid : ZeroSvg -> Svg a
+secundGrid svg =
+    g [ class "secund-grid" ]
+        (grid svg 1)
 
 
 arrowMarker : Svg a
@@ -59,26 +111,11 @@ arrowMarker =
         ]
 
 
-
--- Convierte coordenadas del sistema matemático al sistema SVG
--- En el sistema matemático: (0,0) está en el centro, Y crece hacia arriba
--- En el sistema SVG: (0,0) está en la esquina superior izquierda, Y crece hacia abajo
-
-
-transformCoordinates : Float -> Float -> Float -> Float -> ( Float, Float )
-transformCoordinates x y svgHeight svgWidth =
-    ( centerX svgWidth + x
-      -- X: desplazar por el centro
-    , centerY svgHeight - y
-      -- Y: invertir y desplazar por el centro
-    )
-
-
-pointToSvg : Float -> Float -> Point -> Svg a
-pointToSvg svgHeight svgWidth (Point point) =
+pointToSvg : ZeroSvg -> Point -> Svg a
+pointToSvg svg (Point point) =
     let
         ( svgX, svgY ) =
-            transformCoordinates point.x point.y svgHeight svgWidth
+            transformCoordinates svg point.x point.y
     in
     circle
         [ r "4"
@@ -91,15 +128,15 @@ pointToSvg svgHeight svgWidth (Point point) =
         []
 
 
-vectorToSvg : Float -> Float -> Vector -> Svg a
-vectorToSvg svgHeight svgWidth (Vector vector) =
+vectorToSvg : ZeroSvg -> Vector -> Svg a
+vectorToSvg svg (Vector vector) =
     let
         ( svgX, svgY ) =
-            transformCoordinates vector.x vector.y svgHeight svgWidth
+            transformCoordinates svg vector.x vector.y
     in
     line
-        [ x1 (String.fromFloat (centerX svgWidth))
-        , y1 (String.fromFloat (centerY svgHeight))
+        [ x1 (String.fromFloat (centerX svg))
+        , y1 (String.fromFloat (centerY svg))
         , x2 (String.fromFloat svgX)
         , y2 (String.fromFloat svgY)
         , stroke "blue"
@@ -109,18 +146,20 @@ vectorToSvg svgHeight svgWidth (Vector vector) =
         []
 
 
-mainSvg : Float -> Float -> List Point -> List Vector -> Svg a
-mainSvg svgHeight svgWidth points vectors =
+mainSvg : ZeroSvg -> List Point -> List Vector -> Svg a
+mainSvg zeroSvg points vectors =
     svg
         [ id "graph"
-        , width (String.fromFloat svgWidth)
-        , height (String.fromFloat svgHeight)
-        , viewBox ("0 0 " ++ String.fromFloat svgWidth ++ " " ++ String.fromFloat svgHeight)
+        , width (String.fromFloat zeroSvg.size.width)
+        , height (String.fromFloat zeroSvg.size.height)
+        , viewBox ("0 0 " ++ String.fromFloat zeroSvg.size.width ++ " " ++ String.fromFloat zeroSvg.size.height)
         ]
         [ arrowMarker
-        , axis svgHeight svgWidth
+        , secundGrid zeroSvg
+        , mainGrid zeroSvg
+        , axis zeroSvg
         , g [ class "points" ]
-            (List.map (pointToSvg svgHeight svgWidth) points)
+            (List.map (pointToSvg zeroSvg) points)
         , g [ class "vectors" ]
-            (List.map (vectorToSvg svgHeight svgWidth) vectors)
+            (List.map (vectorToSvg zeroSvg) vectors)
         ]

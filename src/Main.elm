@@ -3,10 +3,11 @@ module Main exposing (..)
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
-import Draw exposing (mainSvg)
+import Draw exposing (ZeroSvg, mainSvg)
 import Html exposing (Html, a, button, div, img, input, p, text)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Events exposing (on, onClick, onInput, onSubmit)
+import Json.Decode as Decode
 import List exposing (filter, member)
 import Parse exposing (Point(..), Vector(..), deadEndsToString, point, pointToString, vector, vectorToString)
 import Parser exposing (Parser, oneOf, run)
@@ -31,17 +32,21 @@ type alias Model =
     , vectors : List Vector
     , inputText : String
     , parseError : String
-    , svgSize : Maybe { width : Float, height : Float }
+    , svg : ZeroSvg
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { points = [ Point { name = "A", x = 50, y = 100 } ]
-      , vectors = [ Vector { name = "u", x = -30, y = 50 } ]
+    ( { points = [ Point { name = "A", x = 5, y = 10 } ]
+      , vectors = [ Vector { name = "u", x = -3, y = 5 } ]
       , inputText = ""
       , parseError = ""
-      , svgSize = Nothing
+      , svg =
+            { size = { width = 800.0, height = 600.0 }
+            , center = { x = 0.0, y = 0.0 }
+            , scale = 20.0
+            }
       }
     , getSvgSizeCmd
     )
@@ -60,6 +65,11 @@ subscriptions model =
 -- UPDATE
 
 
+onWheel : (Float -> msg) -> Html.Attribute msg
+onWheel tagger =
+    on "wheel" (Decode.map tagger (Decode.at [ "deltaY" ] Decode.float))
+
+
 type Msg
     = Add
     | DeletePoint Point
@@ -67,6 +77,8 @@ type Msg
     | UpdateInput String
     | GetSvgSize
     | GotSvgSize (Result Dom.Error Dom.Element)
+    | ScaleInput String
+    | WheelMoved Float
 
 
 getSvgSizeCmd : Cmd Msg
@@ -102,12 +114,49 @@ update msg model =
             ( model, getSvgSizeCmd )
 
         GotSvgSize (Ok element) ->
-            ( { model | svgSize = Just { width = element.element.width, height = element.element.height } }
+            let
+                svg =
+                    model.svg
+
+                updatedSvg =
+                    { svg | size = { width = element.element.width, height = element.element.height } }
+            in
+            ( { model | svg = updatedSvg }
             , Cmd.none
             )
 
         GotSvgSize (Err _) ->
             ( model, getSvgSizeCmd )
+
+        ScaleInput newScale ->
+            case String.toFloat newScale of
+                Just num ->
+                    let
+                        svg =
+                            model.svg
+
+                        updatedSvg =
+                            { svg | scale = num }
+                    in
+                    ( { model | svg = updatedSvg }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        WheelMoved moved ->
+            let
+                svg =
+                    model.svg
+
+                newScale =
+                    svg.scale * (1 - moved / 1000)
+
+                updatedSvg =
+                    { svg | scale = clamp 1 500 newScale }
+            in
+            ( { model | svg = updatedSvg }
+            , Cmd.none
+            )
 
 
 parserMaster : Model -> Parser Model
@@ -152,7 +201,7 @@ pointToDiv : Point -> Html Msg
 pointToDiv point =
     div [ class "entry" ]
         [ div [ class "entry-text" ] [ text (pointToString point) ]
-        , button [ class "entry-button", onClick (DeletePoint point) ] [ text "-" ]
+        , button [ class "minus-button", onClick (DeletePoint point) ] [ text "-" ]
         ]
 
 
@@ -160,7 +209,7 @@ vectorToDiv : Vector -> Html Msg
 vectorToDiv vector =
     div [ class "entry" ]
         [ div [ class "entry-text" ] [ text (vectorToString vector) ]
-        , button [ class "entry-button", onClick (DeleteVector vector) ] [ text "-" ]
+        , button [ class "minus-button", onClick (DeleteVector vector) ] [ text "-" ]
         ]
 
 
@@ -176,7 +225,7 @@ socialsDiv =
 
 viewInput : String -> Html Msg
 viewInput inputText =
-    Html.form [ class "add", onSubmit Add ] [ input [ class "add-input", value inputText, onInput UpdateInput ] [], button [ class "add-button", onClick Add ] [ text "+" ] ]
+    Html.form [ class "add", onSubmit Add ] [ input [ class "add-input", value inputText, onInput UpdateInput ] [], button [ class "plus-button", onClick Add ] [ text "+" ] ]
 
 
 view : Model -> Html Msg
@@ -190,12 +239,7 @@ view model =
             , div [ class "spacer" ] []
             , socialsDiv
             ]
-        , div [ id "svg" ]
-            [ case model.svgSize of
-                Just size ->
-                    mainSvg size.height size.width model.points model.vectors
-
-                Nothing ->
-                    p [] [ text "Loading..." ]
+        , div [ id "svg", onWheel WheelMoved ]
+            [ mainSvg model.svg model.points model.vectors
             ]
         ]

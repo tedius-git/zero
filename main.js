@@ -5338,13 +5338,17 @@ var $author$project$Main$init = function (_v0) {
 			points: _List_fromArray(
 				[
 					$author$project$Parse$Point(
-					{name: 'A', x: 50, y: 100})
+					{name: 'A', x: 5, y: 10})
 				]),
-			svgSize: $elm$core$Maybe$Nothing,
+			svg: {
+				center: {x: 0.0, y: 0.0},
+				scale: 20.0,
+				size: {height: 600.0, width: 800.0}
+			},
 			vectors: _List_fromArray(
 				[
 					$author$project$Parse$Vector(
-					{name: 'u', x: -30, y: 50})
+					{name: 'u', x: -3, y: 5})
 				])
 		},
 		$author$project$Main$getSvgSizeCmd);
@@ -5785,6 +5789,10 @@ var $author$project$Main$areDifferentVector = F2(
 		var v1 = _v0.a;
 		var v2 = _v1.a;
 		return !_Utils_eq(v1.name, v2.name);
+	});
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
@@ -6633,22 +6641,59 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'GetSvgSize':
 				return _Utils_Tuple2(model, $author$project$Main$getSvgSizeCmd);
-			default:
+			case 'GotSvgSize':
 				if (msg.a.$ === 'Ok') {
 					var element = msg.a.a;
+					var svg = model.svg;
+					var updatedSvg = _Utils_update(
+						svg,
+						{
+							size: {height: element.element.height, width: element.element.width}
+						});
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{
-								svgSize: $elm$core$Maybe$Just(
-									{height: element.element.height, width: element.element.width})
-							}),
+							{svg: updatedSvg}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(model, $author$project$Main$getSvgSizeCmd);
 				}
+			case 'ScaleInput':
+				var newScale = msg.a;
+				var _v2 = $elm$core$String$toFloat(newScale);
+				if (_v2.$ === 'Just') {
+					var num = _v2.a;
+					var svg = model.svg;
+					var updatedSvg = _Utils_update(
+						svg,
+						{scale: num});
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{svg: updatedSvg}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			default:
+				var moved = msg.a;
+				var svg = model.svg;
+				var newScale = svg.scale * (1 - (moved / 1000));
+				var updatedSvg = _Utils_update(
+					svg,
+					{
+						scale: A3($elm$core$Basics$clamp, 1, 500, newScale)
+					});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{svg: updatedSvg}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$WheelMoved = function (a) {
+	return {$: 'WheelMoved', a: a};
+};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6718,11 +6763,11 @@ var $author$project$Draw$arrowMarker = A2(
 					_List_Nil)
 				]))
 		]));
-var $author$project$Draw$centerX = function (svgWidth) {
-	return svgWidth / 2;
+var $author$project$Draw$centerX = function (svg) {
+	return (svg.size.width / 2) + svg.center.x;
 };
-var $author$project$Draw$centerY = function (svgHeight) {
-	return svgHeight / 2;
+var $author$project$Draw$centerY = function (svg) {
+	return (svg.size.height / 2) + svg.center.y;
 };
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $elm$core$String$fromFloat = _String_fromNumber;
@@ -6732,65 +6777,213 @@ var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Draw$axis = F2(
-	function (svgHeight, svgWidth) {
-		return A2(
-			$elm$svg$Svg$g,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$class('axis')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$line,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x1('0'),
-							$elm$svg$Svg$Attributes$y1(
-							$elm$core$String$fromFloat(
-								$author$project$Draw$centerY(svgHeight))),
-							$elm$svg$Svg$Attributes$x2(
-							$elm$core$String$fromFloat(svgWidth)),
-							$elm$svg$Svg$Attributes$y2(
-							$elm$core$String$fromFloat(
-								$author$project$Draw$centerY(svgHeight))),
-							$elm$svg$Svg$Attributes$class('x-axis')
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$line,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x1(
-							$elm$core$String$fromFloat(
-								$author$project$Draw$centerX(svgWidth))),
-							$elm$svg$Svg$Attributes$y1('0'),
-							$elm$svg$Svg$Attributes$x2(
-							$elm$core$String$fromFloat(
-								$author$project$Draw$centerX(svgWidth))),
-							$elm$svg$Svg$Attributes$y2(
-							$elm$core$String$fromFloat(svgHeight)),
-							$elm$svg$Svg$Attributes$class('y-axis')
-						]),
-					_List_Nil)
-				]));
-	});
+var $author$project$Draw$axis = function (svg) {
+	return A2(
+		$elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('axis')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$line,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x1('0'),
+						$elm$svg$Svg$Attributes$y1(
+						$elm$core$String$fromFloat(
+							$author$project$Draw$centerY(svg))),
+						$elm$svg$Svg$Attributes$x2(
+						$elm$core$String$fromFloat(svg.size.width)),
+						$elm$svg$Svg$Attributes$y2(
+						$elm$core$String$fromFloat(
+							$author$project$Draw$centerY(svg))),
+						$elm$svg$Svg$Attributes$class('x-axis')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$line,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x1(
+						$elm$core$String$fromFloat(
+							$author$project$Draw$centerX(svg))),
+						$elm$svg$Svg$Attributes$y1('0'),
+						$elm$svg$Svg$Attributes$x2(
+						$elm$core$String$fromFloat(
+							$author$project$Draw$centerX(svg))),
+						$elm$svg$Svg$Attributes$y2(
+						$elm$core$String$fromFloat(svg.size.height)),
+						$elm$svg$Svg$Attributes$class('y-axis')
+					]),
+				_List_Nil)
+			]));
+};
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Draw$transformX = F2(
+	function (svg, x) {
+		return $author$project$Draw$centerX(svg) + (x * svg.scale);
+	});
+var $author$project$Draw$transformY = F2(
+	function (svg, y) {
+		return $author$project$Draw$centerY(svg) - (y * svg.scale);
+	});
+var $author$project$Draw$grid = F2(
+	function (svg, gridScale) {
+		var toSvgY = function (y) {
+			return $elm$core$String$fromFloat(
+				A2($author$project$Draw$transformY, svg, y));
+		};
+		var toSvgX = function (x) {
+			return $elm$core$String$fromFloat(
+				A2($author$project$Draw$transformX, svg, x));
+		};
+		return _Utils_ap(
+			A2(
+				$elm$core$List$indexedMap,
+				function (i) {
+					return function (_v0) {
+						return A2(
+							$elm$svg$Svg$line,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$x1(
+									$elm$core$String$fromFloat(0)),
+									$elm$svg$Svg$Attributes$y1(
+									toSvgY(i * gridScale)),
+									$elm$svg$Svg$Attributes$x2(
+									$elm$core$String$fromFloat(svg.size.width)),
+									$elm$svg$Svg$Attributes$y2(
+									toSvgY(i * gridScale))
+								]),
+							_List_Nil);
+					};
+				},
+				A2(
+					$elm$core$List$repeat,
+					$elm$core$Basics$round(svg.size.height / 2),
+					0)),
+			_Utils_ap(
+				A2(
+					$elm$core$List$indexedMap,
+					function (i) {
+						return function (_v1) {
+							return A2(
+								$elm$svg$Svg$line,
+								_List_fromArray(
+									[
+										$elm$svg$Svg$Attributes$x1(
+										$elm$core$String$fromFloat(0)),
+										$elm$svg$Svg$Attributes$y1(
+										toSvgY(i * (-gridScale))),
+										$elm$svg$Svg$Attributes$x2(
+										$elm$core$String$fromFloat(svg.size.width)),
+										$elm$svg$Svg$Attributes$y2(
+										toSvgY(i * (-gridScale)))
+									]),
+								_List_Nil);
+						};
+					},
+					A2(
+						$elm$core$List$repeat,
+						$elm$core$Basics$round(svg.size.height / 2),
+						0)),
+				_Utils_ap(
+					A2(
+						$elm$core$List$indexedMap,
+						function (i) {
+							return function (_v2) {
+								return A2(
+									$elm$svg$Svg$line,
+									_List_fromArray(
+										[
+											$elm$svg$Svg$Attributes$y1(
+											$elm$core$String$fromFloat(0)),
+											$elm$svg$Svg$Attributes$x1(
+											toSvgX(i * gridScale)),
+											$elm$svg$Svg$Attributes$y2(
+											$elm$core$String$fromFloat(svg.size.height)),
+											$elm$svg$Svg$Attributes$x2(
+											toSvgX(i * gridScale))
+										]),
+									_List_Nil);
+							};
+						},
+						A2(
+							$elm$core$List$repeat,
+							$elm$core$Basics$round(svg.size.width / 2),
+							0)),
+					A2(
+						$elm$core$List$indexedMap,
+						function (i) {
+							return function (_v3) {
+								return A2(
+									$elm$svg$Svg$line,
+									_List_fromArray(
+										[
+											$elm$svg$Svg$Attributes$y1(
+											$elm$core$String$fromFloat(0)),
+											$elm$svg$Svg$Attributes$x1(
+											toSvgX(i * (-gridScale))),
+											$elm$svg$Svg$Attributes$y2(
+											$elm$core$String$fromFloat(svg.size.height)),
+											$elm$svg$Svg$Attributes$x2(
+											toSvgX(i * (-gridScale)))
+										]),
+									_List_Nil);
+							};
+						},
+						A2(
+							$elm$core$List$repeat,
+							$elm$core$Basics$round(svg.size.width / 2),
+							0)))));
+	});
+var $author$project$Draw$mainGrid = function (svg) {
+	return A2(
+		$elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('main-grid')
+			]),
+		A2($author$project$Draw$grid, svg, 5));
+};
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$Draw$transformCoordinates = F4(
-	function (x, y, svgHeight, svgWidth) {
+var $author$project$Draw$transformCoordinates = F3(
+	function (svg, x, y) {
 		return _Utils_Tuple2(
-			$author$project$Draw$centerX(svgWidth) + x,
-			$author$project$Draw$centerY(svgHeight) - y);
+			A2($author$project$Draw$transformX, svg, x),
+			A2($author$project$Draw$transformY, svg, y));
 	});
-var $author$project$Draw$pointToSvg = F3(
-	function (svgHeight, svgWidth, _v0) {
+var $author$project$Draw$pointToSvg = F2(
+	function (svg, _v0) {
 		var point = _v0.a;
-		var _v1 = A4($author$project$Draw$transformCoordinates, point.x, point.y, svgHeight, svgWidth);
+		var _v1 = A3($author$project$Draw$transformCoordinates, svg, point.x, point.y);
 		var svgX = _v1.a;
 		var svgY = _v1.b;
 		return A2(
@@ -6808,12 +7001,21 @@ var $author$project$Draw$pointToSvg = F3(
 				]),
 			_List_Nil);
 	});
+var $author$project$Draw$secundGrid = function (svg) {
+	return A2(
+		$elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('secund-grid')
+			]),
+		A2($author$project$Draw$grid, svg, 1));
+};
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$markerEnd = _VirtualDom_attribute('marker-end');
-var $author$project$Draw$vectorToSvg = F3(
-	function (svgHeight, svgWidth, _v0) {
+var $author$project$Draw$vectorToSvg = F2(
+	function (svg, _v0) {
 		var vector = _v0.a;
-		var _v1 = A4($author$project$Draw$transformCoordinates, vector.x, vector.y, svgHeight, svgWidth);
+		var _v1 = A3($author$project$Draw$transformCoordinates, svg, vector.x, vector.y);
 		var svgX = _v1.a;
 		var svgY = _v1.b;
 		return A2(
@@ -6822,10 +7024,10 @@ var $author$project$Draw$vectorToSvg = F3(
 				[
 					$elm$svg$Svg$Attributes$x1(
 					$elm$core$String$fromFloat(
-						$author$project$Draw$centerX(svgWidth))),
+						$author$project$Draw$centerX(svg))),
 					$elm$svg$Svg$Attributes$y1(
 					$elm$core$String$fromFloat(
-						$author$project$Draw$centerY(svgHeight))),
+						$author$project$Draw$centerY(svg))),
 					$elm$svg$Svg$Attributes$x2(
 					$elm$core$String$fromFloat(svgX)),
 					$elm$svg$Svg$Attributes$y2(
@@ -6838,24 +7040,26 @@ var $author$project$Draw$vectorToSvg = F3(
 	});
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Draw$mainSvg = F4(
-	function (svgHeight, svgWidth, points, vectors) {
+var $author$project$Draw$mainSvg = F3(
+	function (zeroSvg, points, vectors) {
 		return A2(
 			$elm$svg$Svg$svg,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$id('graph'),
 					$elm$svg$Svg$Attributes$width(
-					$elm$core$String$fromFloat(svgWidth)),
+					$elm$core$String$fromFloat(zeroSvg.size.width)),
 					$elm$svg$Svg$Attributes$height(
-					$elm$core$String$fromFloat(svgHeight)),
+					$elm$core$String$fromFloat(zeroSvg.size.height)),
 					$elm$svg$Svg$Attributes$viewBox(
-					'0 0 ' + ($elm$core$String$fromFloat(svgWidth) + (' ' + $elm$core$String$fromFloat(svgHeight))))
+					'0 0 ' + ($elm$core$String$fromFloat(zeroSvg.size.width) + (' ' + $elm$core$String$fromFloat(zeroSvg.size.height))))
 				]),
 			_List_fromArray(
 				[
 					$author$project$Draw$arrowMarker,
-					A2($author$project$Draw$axis, svgHeight, svgWidth),
+					$author$project$Draw$secundGrid(zeroSvg),
+					$author$project$Draw$mainGrid(zeroSvg),
+					$author$project$Draw$axis(zeroSvg),
 					A2(
 					$elm$svg$Svg$g,
 					_List_fromArray(
@@ -6864,7 +7068,7 @@ var $author$project$Draw$mainSvg = F4(
 						]),
 					A2(
 						$elm$core$List$map,
-						A2($author$project$Draw$pointToSvg, svgHeight, svgWidth),
+						$author$project$Draw$pointToSvg(zeroSvg),
 						points)),
 					A2(
 					$elm$svg$Svg$g,
@@ -6874,15 +7078,15 @@ var $author$project$Draw$mainSvg = F4(
 						]),
 					A2(
 						$elm$core$List$map,
-						A2($author$project$Draw$vectorToSvg, svgHeight, svgWidth),
+						$author$project$Draw$vectorToSvg(zeroSvg),
 						vectors))
 				]));
 	});
-var $elm$html$Html$p = _VirtualDom_node('p');
-var $author$project$Main$DeletePoint = function (a) {
-	return {$: 'DeletePoint', a: a};
-};
-var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6894,6 +7098,23 @@ var $elm$html$Html$Events$on = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
+var $author$project$Main$onWheel = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'wheel',
+		A2(
+			$elm$json$Json$Decode$map,
+			tagger,
+			A2(
+				$elm$json$Json$Decode$at,
+				_List_fromArray(
+					['deltaY']),
+				$elm$json$Json$Decode$float)));
+};
+var $author$project$Main$DeletePoint = function (a) {
+	return {$: 'DeletePoint', a: a};
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -6928,7 +7149,7 @@ var $author$project$Main$pointToDiv = function (point) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('entry-button'),
+						$elm$html$Html$Attributes$class('minus-button'),
 						$elm$html$Html$Events$onClick(
 						$author$project$Main$DeletePoint(point))
 					]),
@@ -7005,7 +7226,7 @@ var $author$project$Main$vectorToDiv = function (vector) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('entry-button'),
+						$elm$html$Html$Attributes$class('minus-button'),
 						$elm$html$Html$Events$onClick(
 						$author$project$Main$DeleteVector(vector))
 					]),
@@ -7033,10 +7254,6 @@ var $elm$html$Html$Events$stopPropagationOn = F2(
 			$elm$virtual_dom$VirtualDom$on,
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$html$Html$Events$targetValue = A2(
@@ -7099,7 +7316,7 @@ var $author$project$Main$viewInput = function (inputText) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('add-button'),
+						$elm$html$Html$Attributes$class('plus-button'),
 						$elm$html$Html$Events$onClick($author$project$Main$Add)
 					]),
 				_List_fromArray(
@@ -7156,25 +7373,12 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$id('svg')
+						$elm$html$Html$Attributes$id('svg'),
+						$author$project$Main$onWheel($author$project$Main$WheelMoved)
 					]),
 				_List_fromArray(
 					[
-						function () {
-						var _v0 = model.svgSize;
-						if (_v0.$ === 'Just') {
-							var size = _v0.a;
-							return A4($author$project$Draw$mainSvg, size.height, size.width, model.points, model.vectors);
-						} else {
-							return A2(
-								$elm$html$Html$p,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Loading...')
-									]));
-						}
-					}()
+						A3($author$project$Draw$mainSvg, model.svg, model.points, model.vectors)
 					]))
 			]));
 };
