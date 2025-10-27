@@ -6658,23 +6658,6 @@ var $author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $author$project$Main$getSvgSizeCmd);
 				}
-			case 'ScaleInput':
-				var newScale = msg.a;
-				var _v2 = $elm$core$String$toFloat(newScale);
-				if (_v2.$ === 'Just') {
-					var num = _v2.a;
-					var svg = model.svg;
-					var updatedSvg = _Utils_update(
-						svg,
-						{scale: num});
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{svg: updatedSvg}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
 			default:
 				var moved = msg.a;
 				var svg = model.svg;
@@ -6682,7 +6665,7 @@ var $author$project$Main$update = F2(
 				var updatedSvg = _Utils_update(
 					svg,
 					{
-						scale: A3($elm$core$Basics$clamp, 1, 500, newScale)
+						scale: A3($elm$core$Basics$clamp, 1, 1000, newScale)
 					});
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6961,14 +6944,23 @@ var $author$project$Draw$grid = F2(
 							$elm$core$Basics$round(svg.size.width / 2),
 							0)))));
 	});
+var $elm$core$Basics$pow = _Basics_pow;
+var $author$project$Draw$gridSpacing = function (scale) {
+	var targetPixelSpacing = 50;
+	var worldSpacing = targetPixelSpacing / scale;
+	var power = $elm$core$Basics$round(
+		A2($elm$core$Basics$logBase, 10, worldSpacing));
+	return A2($elm$core$Basics$pow, 10, power);
+};
 var $author$project$Draw$mainGrid = function (svg) {
+	var spacing = $author$project$Draw$gridSpacing(svg.scale);
 	return A2(
 		$elm$svg$Svg$g,
 		_List_fromArray(
 			[
 				$elm$svg$Svg$Attributes$class('main-grid')
 			]),
-		A2($author$project$Draw$grid, svg, 5));
+		A2($author$project$Draw$grid, svg, spacing * 5));
 };
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -7002,13 +6994,14 @@ var $author$project$Draw$pointToSvg = F2(
 			_List_Nil);
 	});
 var $author$project$Draw$secundGrid = function (svg) {
-	return A2(
+	var spacing = $author$project$Draw$gridSpacing(svg.scale);
+	return ((spacing * svg.scale) > 10) ? A2(
 		$elm$svg$Svg$g,
 		_List_fromArray(
 			[
 				$elm$svg$Svg$Attributes$class('secund-grid')
 			]),
-		A2($author$project$Draw$grid, svg, 1));
+		A2($author$project$Draw$grid, svg, spacing)) : A2($elm$svg$Svg$g, _List_Nil, _List_Nil);
 };
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$markerEnd = _VirtualDom_attribute('marker-end');

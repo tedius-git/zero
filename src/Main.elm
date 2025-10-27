@@ -77,7 +77,6 @@ type Msg
     | UpdateInput String
     | GetSvgSize
     | GotSvgSize (Result Dom.Error Dom.Element)
-    | ScaleInput String
     | WheelMoved Float
 
 
@@ -128,21 +127,6 @@ update msg model =
         GotSvgSize (Err _) ->
             ( model, getSvgSizeCmd )
 
-        ScaleInput newScale ->
-            case String.toFloat newScale of
-                Just num ->
-                    let
-                        svg =
-                            model.svg
-
-                        updatedSvg =
-                            { svg | scale = num }
-                    in
-                    ( { model | svg = updatedSvg }, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
         WheelMoved moved ->
             let
                 svg =
@@ -152,7 +136,7 @@ update msg model =
                     svg.scale * (1 - moved / 1000)
 
                 updatedSvg =
-                    { svg | scale = clamp 1 500 newScale }
+                    { svg | scale = clamp 1 1000 newScale }
             in
             ( { model | svg = updatedSvg }
             , Cmd.none

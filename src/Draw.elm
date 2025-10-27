@@ -77,16 +77,43 @@ grid svg gridScale =
         ++ List.indexedMap (\i -> \_ -> line [ y1 (String.fromFloat 0), x1 (toSvgX (toFloat i * -gridScale)), y2 (String.fromFloat svg.size.height), x2 (toSvgX (toFloat i * -gridScale)) ] []) (repeat (round (svg.size.width / 2)) 0)
 
 
+gridSpacing : Float -> Float
+gridSpacing scale =
+    let
+        targetPixelSpacing =
+            50
+
+        worldSpacing =
+            targetPixelSpacing / scale
+
+        power =
+            logBase 10 worldSpacing |> round |> toFloat
+    in
+    10 ^ power
+
+
 mainGrid : ZeroSvg -> Svg a
 mainGrid svg =
+    let
+        spacing =
+            gridSpacing svg.scale
+    in
     g [ class "main-grid" ]
-        (grid svg 5)
+        (grid svg (spacing * 5))
 
 
 secundGrid : ZeroSvg -> Svg a
 secundGrid svg =
-    g [ class "secund-grid" ]
-        (grid svg 1)
+    let
+        spacing =
+            gridSpacing svg.scale
+    in
+    if spacing * svg.scale > 10 then
+        g [ class "secund-grid" ]
+            (grid svg spacing)
+
+    else
+        g [] []
 
 
 arrowMarker : Svg a
