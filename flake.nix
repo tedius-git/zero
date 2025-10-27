@@ -16,6 +16,7 @@
         devShells.default = pkgs.mkShell {
           shellHook = ''
             echo "Development environment loaded"
+            alias zero-dev='find src -name '*.elm' | entr -c elm make src/Main.elm --output=main.js'
           '';
           packages = with pkgs; [
             (haskell.lib.compose.overrideSrc {
@@ -27,6 +28,7 @@
                 };
               }
               elmPackages.elm)
+            entr
           ];
         };
       }
