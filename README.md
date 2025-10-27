@@ -10,10 +10,10 @@
 
 ## TODO
 
-- [] Unique naming
-- [] Automatic naming
-- [] aritmetic operations (+,-,*,/)
-- [] variable declarations
+- [ ] Unique naming
+- [ ] Automatic naming
+- [ ] aritmetic operations (+,-,*,/)
+- [ ] variable declarations
 
 ## Development
 
